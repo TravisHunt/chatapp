@@ -1,0 +1,29 @@
+extends layout
+
+block content
+  if user
+    ul#messages
+    form#msg-field(action="")
+      input#m(autocomplete="off")
+      button Send
+  else
+    div.jumbotron
+      h1 MongoDB User Authentication
+      p
+        a(href="/signin" role="button").btn.btn-primary.btn-lg Sign in!
+            span.glyphicon.glyphicon-user
+  
+  script(src="/socket.io/socket.io.js").
+  script(src="http://code.jquery.com/jquery-1.11.1.js").
+  script.
+    var socket = io();
+    
+    $('#msg-field').on('submit', function() {
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+    });
+    
+    socket.on('chat message', function(msg) {
+        $('#messages').append($('<li>').text(msg));
+    });
