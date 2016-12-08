@@ -26,7 +26,7 @@ router.post('/login', passport.authenticate('local-signin', {
 }));
 
 // logs user out of site, deleting them from the session
-router.get('/logout', function(req, res) {
+router.get('/logout', function(req, res, next) {
     var name = req.user.username;
     console.log("LOGGING OUT " + req.user.username);
     req.logout();

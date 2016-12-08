@@ -1,27 +1,11 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; }
-
 body {
   font: 13px "Lucida Grande", Helvetica, Arial, sans-serif; }
 
 #msg-field {
-  background: #000;
-  padding: 3px;
   position: fixed;
   bottom: 0;
-  width: 100%; }
-  #msg-field input {
-    border: 0;
-    padding: 10px;
-    width: 90%;
-    margin-right: 0.5%; }
-  #msg-field button {
-    width: 9%;
-    background: #82e0ff;
-    border: none;
-    padding: 10px; }
+  left: 15px;
+  right: 15px; }
 
 #messages {
   list-style-type: none;
@@ -31,5 +15,8 @@ body {
     padding: 5px 10px; }
     #messages li:nth-child(odd) {
       background: #eee; }
+
+.nav-image {
+  padding: 5px; }
 
 /*# sourceMappingURL=style.css.map */
