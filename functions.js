@@ -1,65 +1,59 @@
 var bcrypt = require('bcryptjs');
 var Q = require('q');
-var config = require('./config')
+var config = require('./config');
+var mongoose = require('mongoose');
+var localUser = require('./models/localUser');
+
+mongoose.Promise = Q.Promise;
 
 // MongoDB connection info
 var mongodbURL = "mongodb://" + config.mongodbHost + ':27017/users';
-var MongoClient = require('mongodb').MongoClient;
 
-// used in local-signup strategy
+// local-signup strategy
 exports.localReg = function(username, password) {
     var deferred = Q.defer();
-    
-    MongoClient.connect(mongodbURL, function(err, db) {
-        var collection = db.collection('localUsers');
-        
-        // check if username is already assigned
-        collection.findOne({'username': username})
-          .then(function(result) {
-            if (result != null) {
-                console.log("USERNAME ALREADY EXISTS:", result.username);
-                deferred.resolve(false);
-            } else {
-                var user = {
-                    "username": username,
-                    "password": bcrypt.hashSync(password, 8),
-                    "avatar": "/images/defaultIcon.png",
+    mongoose.connect(mongodbURL);
+    localUser.findOne({"username": username}, function(err, user) {
+        if (user) {
+            deferred.resolve(false);
+        } else {
+            // create new local user
+            var newUser = new localUser({
+                username: username,
+                password: bcrypt.hashSync(password, 8),
+                avatar: "/images/defaultIcon.png",
+            });
+            // save user to database
+            newUser.save(function(err) {
+                if (err) {
+                    console.log(err.body);
+                    deferred.resolve(false);
+                } else {
+                    deferred.resolve(newUser);
                 }
-                console.log("CREATING USER:", username);
-                
-                collection.insert(user)
-                  .then(function() {
-                    db.close();
-                    deferred.resolve(user);
-                });
-            }
-        });
+                mongoose.connection.close();
+            });
+        }
     });
     return deferred.promise;
 };
 
+// local-signin strategy
 exports.localAuth = function(username, password) {
     var deferred = Q.defer();
-    
-    MongoClient.connect(mongodbURL, function(err, db) {
-        var collection = db.collection('localUsers');
-        
-        collection.findOne({'username': username})
-          .then(function(result) {
-            if (result == null) {
-                console.log("USERNAME NOT FOUND:", username);
-                deferred.resolve(false);
+    mongoose.connect(mongodbURL);
+    localUser.findOne({"username": username}, function(err, user) {
+        if (user) {
+            if (bcrypt.compareSync(password, user.password)) {
+                deferred.resolve(user);
             } else {
-                console.log("FOUND USER: " + result.username);
-                if (bcrypt.compareSync(password, result.password)) {
-                    deferred.resolve(result);
-                } else {
-                    console.log("AUTHENTICATION FAILED");
-                    deferred.resolve(false);
-                }
+                deferred.resolve(false);
             }
-            db.close();
-        });
+        } else {
+            console.log("[ERROR] " + username + " not found!");
+            deferred.resolve(false);
+        }
+        mongoose.connection.close();
     });
     return deferred.promise;
 };
