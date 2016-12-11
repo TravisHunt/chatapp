@@ -2,14 +2,17 @@ extends layout
 
 block content
     if user
-        ul#messages
-        form#msg-field(action="")
-            p#typing
-            .form-group
-                .input-group
-                    input#m(type="text" autocomplete="off" placeholder="...").form-control
-                    span.input-group-btn
-                        button(type="submit").btn.btn-secondary Send
+        #chat-window
+            #msg-window
+                ul#messages
+            #msg-input
+                form#msg-field(action="")
+                    p#typing
+                        .form-group.no-margin
+                            .input-group
+                                input#m(type="text" autocomplete="off" placeholder="...").form-control
+                                span.input-group-btn
+                                    button(type="submit").btn.btn-secondary Send
     else
         div.jumbotron
             h1 Chat App
@@ -23,12 +26,17 @@ block content
         var socket = io();
         var user = !{JSON.stringify(user)};
         var typing = [];
+        var usersTypingID = '#typing';
+        var formID = '#msg-field';
+        var msgWindowID = '#msg-window';
+        var inputID = '#m';
+        var msgListID = '#messages';
         
         // constructs the "users typing..." string based on the user names in the typing array
         function setUsersTyping() {
             var indicitive = " is ";
-            if (typing.length == 0) $('#typing').text('');
-            else if (typing.length == 1) $('#typing').text(typing[0] + indicitive + "typing...");
+            if (typing.length == 0) $(usersTypingID).text('');
+            else if (typing.length == 1) $(usersTypingID).text(typing[0] + indicitive + "typing...");
             else {
                 indicitive = " are ";
                 var typers = "";
@@ -36,17 +44,17 @@ block content
                 for (var i = 0; i < num; i++) {
                     typers += typing[i] + (i < num - 1 ? ", " : "");
                 }
-                $('#typing').text(typers + indicitive + "typing...");
+                $(usersTypingID).text(typers + indicitive + "typing...");
             }
         }
         
-        $('#msg-field').on('submit', function() {
-            socket.emit('chat message', user, $('#m').val());
-            $('#m').val('');
+        $(formID).on('submit', function() {
+            socket.emit('chat message', user, $(inputID).val());
+            $(inputID).val('');
             return false;
         });
 
-        $('#m').on('change paste keyup', function() {
+        $(inputID).on('change paste keyup', function() {
             // there are characters in the input field
             if ($(this).val() != '') {
                 // if I'm not already registered as typing
@@ -65,7 +73,8 @@ block content
         // NOTE: A user's message should be posted directly to their
         // message list, rather than receiving it through the chat message event.
         socket.on('chat message', function(user, msg) {
-            $('#messages').append($('<li>').text(user.username + ": " + msg));
+            $(msgListID).append($("<li>").text(user.username + ": " + msg))
+            $(msgWindowID).animate({scrollTop: $(msgWindowID)[0].scrollHeight}, 'fast');
         });
         
         socket.on('user typing', function(username) {

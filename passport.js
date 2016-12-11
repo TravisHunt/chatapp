@@ -9,12 +9,10 @@ var funct = require('./functions');
 
 // User serializer & deserializer
 passport.serializeUser(function(user, done) {
-    console.log("serializing " + user.username);
     done(null, user);
 });
 
 passport.deserializeUser(function(obj, done) {
-    console.log("deserializing " + obj);
     done(null, obj);
 });
 
@@ -25,16 +23,14 @@ passport.use('local-signin', new LocalStrategy(
         funct.localAuth(username, password)
         .then(function(user) {
             if (user) {
-                console.log("LOGGED IN AS: " + user.username);
                 req.session.success = "You are logged in as " + user.username;
                 done(null, user);
             } else {
-                console.log("COULD NOT LOG IN");
                 req.session.error = "Could not log in. Please try again.";
                 done(null, user);
             }
         }).fail(function(err) {
-            console.log(err.body);
+            req.session.error = err.body;
         });     
     }
 ));
@@ -46,16 +42,14 @@ passport.use('local-signup', new LocalStrategy(
         funct.localReg(username, password)
         .then(function(user) {
             if (user) {
-                console.log("REGISTERED:" + user.username);
                 req.session.success = "Registration successful!";
                 done(null, user);
             } else {
-                console.log("COULD NOT REGISTER");
                 req.session.error = "Username not available. Please try a different username.";
                 done(null, user);
             }
         }).fail(function(err) {
-            console.log(err.body);
+            req.session.error = err.body;
         });
     }
 ));

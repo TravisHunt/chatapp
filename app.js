@@ -12,7 +12,7 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 
 var config = require('./config');
-var funct = require('./functions');
+//var funct = require('./functions');
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(methodOverride('X-HTTP-Method-Override'));
-app.use(session({secret: 'supernova', saveUninitialized: true, resave: true}));
+app.use(session({secret: config.secret, saveUninitialized: true, resave: true}));
 app.use(passport.initialize());
 app.use(passport.session());
 
