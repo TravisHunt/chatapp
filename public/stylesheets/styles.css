@@ -15,12 +15,12 @@
   top: 0;
   bottom: 5.3em; }
 
-.no-margin {
-  margin: 0; }
-
 #msg-input {
   display: block;
   bottom: 0; }
+
+.chat-input {
+  border-radius: 0 0 5px 5px; }
 
 #msg-field {
   bottom: 0;
@@ -39,14 +39,11 @@
   padding: 0; }
   #messages li {
     padding: 5px 10px; }
-    #messages li:nth-child(odd) {
-      background: #1a3141; }
+    #messages li .msg-handle {
+      color: #1AB188; }
 
 *, *:before, *:after {
   box-sizing: border-box; }
-
-html {
-  overflow-y: scroll; }
 
 body {
   background: #13232F;
@@ -185,5 +182,8 @@ textarea {
 .forgot {
   margin-top: -20px;
   text-align: right; }
+
+.no-margin {
+  margin: 0; }
 
 /*# sourceMappingURL=styles.css.map */

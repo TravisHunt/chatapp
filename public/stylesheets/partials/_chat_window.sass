@@ -17,13 +17,12 @@
   top: 0
   bottom: 5.3em
 
-.no-margin
-  margin: 0
-
 #msg-input
   display: block
   bottom: 0
 
+.chat-input
+  border-radius: 0 0 5px 5px
 
 #msg-field
   bottom: 0
@@ -43,5 +42,8 @@
 
   li
     padding: 5px 10px
-    &:nth-child(odd)
-      background: lighten($body-bg, 5%)
+
+    .msg-handle
+      color: $main
+    //&:nth-child(odd)
+    //  background: lighten($body-bg, 5%)

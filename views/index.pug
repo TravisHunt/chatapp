@@ -41,8 +41,9 @@ block append javascripts
             }
 
             // appends new message to the chat window and auto scrolls to fit
-            function appendMsg(msg) {
-                $(msgListID).append($("<li>").text(msg));
+            function appendMsg(from, msg) {
+                var message = '<span class="msg-handle">' + from + ':</span> ' + msg;
+                $(msgListID).append($('<li>').html(message));
                 $(msgWindowID).animate({scrollTop: $(msgWindowID)[0].scrollHeight}, 'fast');
             }
 
@@ -76,12 +77,12 @@ block append javascripts
             // NOTE: A user's message should be posted directly to their
             // message list, rather than receiving it through the chat message event.
             socket.on('chat message', function(user, msg) {
-                appendMsg(user.username + ": " + msg);
+                appendMsg(user.username, msg);
             });
 
             // appends a server message to the chat window
             socket.on('server message', function(data) {
-                appendMsg('server: ' + data.message);
+                appendMsg('server', data.message);
             });
 
             // notifies users when a specific user is typing a message
