@@ -1,0 +1,34 @@
+.form
+    ul.tab-group
+        li.tab.active: a(href="#signup") Sign up
+        li.tab: a(href="#login") Log in
+    .tab-content
+        #signup
+            h1 Sign up for Free
+            form(action="/local-reg" method="post")
+                .field-wrap
+                    label Username
+                        span.req *
+                    input(type="text" name="username" autocomplete="off" required)
+                .field-wrap
+                    label Email Address
+                        span.req *
+                    input(type="email" name="email" autocomplete="off" required)
+                .field-wrap
+                    label Password
+                        span.req *
+                    input(type="password" name="password" autocomplete="off" required)
+                input(type="submit" value="Register").button.button-block
+        #login
+            h1 Welcome Back!
+            form(action="/login" method="post")
+                .field-wrap
+                    label Email Address
+                        span.req *
+                    input(type="email" name="email" required)
+                .field-wrap
+                    label Password
+                        span.req *
+                    input(type="password" name="password" required)
+                p.forgot: a(href="#") Forgot Password?
+                button(type="submit" role="button").button.button-block Log In

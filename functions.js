@@ -10,18 +10,19 @@ mongoose.Promise = Q.Promise;
 var mongodbURL = "mongodb://" + config.mongodbHost + ':27017/users';
 
 // local-signup strategy
-exports.localReg = function(username, password) {
+exports.localReg = function(username, email, password) {
     var deferred = Q.defer();
     mongoose.connect(mongodbURL);
-    localUser.findOne({"username": username}, function(err, user) {
+    localUser.findOne({"email": email}, function(err, user) {
         if (user) {
             deferred.resolve(false);
         } else {
             // create new local user
             var newUser = new localUser({
                 username: username,
+                email: email,
                 password: bcrypt.hashSync(password, 8),
-                avatar: "/images/defaultIcon.png",
+                avatar: "/images/defaultIcon.png"
             });
             // save user to database
             newUser.save(function(err) {
@@ -39,10 +40,10 @@ exports.localReg = function(username, password) {
 };
 
 // local-signin strategy
-exports.localAuth = function(username, password) {
+exports.localAuth = function(email, password) {
     var deferred = Q.defer();
     mongoose.connect(mongodbURL);
-    localUser.findOne({"username": username}, function(err, user) {
+    localUser.findOne({"email": email}, function(err, user) {
         if (user) {
             if (bcrypt.compareSync(password, user.password)) {
                 deferred.resolve(user);
@@ -50,7 +51,7 @@ exports.localAuth = function(username, password) {
                 deferred.resolve(false);
             }
         } else {
-            console.log("[ERROR] " + username + " not found!");
+            console.log("[ERROR] " + user.username + " not found!");
             deferred.resolve(false);
         }
         mongoose.connection.close();

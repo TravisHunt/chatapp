@@ -2,89 +2,98 @@ extends layout
 
 block content
     if user
-        #chat-window
-            #msg-window
-                ul#messages
-            #msg-input
-                form#msg-field(action="")
-                    p#typing
-                        .form-group.no-margin
-                            .input-group
-                                input#m(type="text" autocomplete="off" placeholder="...").form-control
-                                span.input-group-btn
-                                    button(type="submit").btn.btn-secondary Send
+        include partials/chat-window.pug
     else
-        div.jumbotron
-            h1 Chat App
-            p
-                a(href="/signin" role="button").btn.btn-primary.btn-lg Sign in!
-                    span.glyphicon.glyphicon-user
-  
-    script(src="/socket.io/socket.io.js").
-    script(src="http://code.jquery.com/jquery-1.11.1.js").
-    script.
-        var socket = io();
-        var user = !{JSON.stringify(user)};
-        var typing = [];
-        var usersTypingID = '#typing';
-        var formID = '#msg-field';
-        var msgWindowID = '#msg-window';
-        var inputID = '#m';
-        var msgListID = '#messages';
-        
-        // constructs the "users typing..." string based on the user names in the typing array
-        function setUsersTyping() {
-            var indicitive = " is ";
-            if (typing.length == 0) $(usersTypingID).text('');
-            else if (typing.length == 1) $(usersTypingID).text(typing[0] + indicitive + "typing...");
-            else {
-                indicitive = " are ";
-                var typers = "";
-                var num = Math.min(typing.length, 5);
-                for (var i = 0; i < num; i++) {
-                    typers += typing[i] + (i < num - 1 ? ", " : "");
-                }
-                $(usersTypingID).text(typers + indicitive + "typing...");
-            }
-        }
-        
-        $(formID).on('submit', function() {
-            socket.emit('chat message', user, $(inputID).val());
-            $(inputID).val('');
-            return false;
-        });
+        include partials/signin.pug
 
-        $(inputID).on('change paste keyup', function() {
-            // there are characters in the input field
-            if ($(this).val() != '') {
-                // if I'm not already registered as typing
-                if (typing.indexOf(user.username) == -1) {
-                    socket.emit('user typing', user.username);
-                }
-            } else {
-                // if I'm registered as typing
-                if (typing.indexOf(user.username) > -1) {
-                    socket.emit('done typing', user.username);
+block append javascripts
+    unless user
+        script(src="/javascripts/signin.js").
+    else
+        script(src="/socket.io/socket.io.js").
+        script.
+            var socket = io();
+            var user = !{JSON.stringify(user)};
+            var typing = [];
+            var usersTypingID = '#typing';
+            var formID = '#msg-field';
+            var msgWindowID = '#msg-window';
+            var inputID = '#m';
+            var msgListID = '#messages';
+
+            // join user specific room
+            socket.emit('join', {username: user.username});
+
+            // constructs the "users typing..." string based on the user names in the typing array
+            function setUsersTyping() {
+                var indicitive = " is ";
+                if (typing.length == 0) $(usersTypingID).text('');
+                else if (typing.length == 1) $(usersTypingID).text(typing[0] + indicitive + "typing...");
+                else {
+                    indicitive = " are ";
+                    var typers = "";
+                    var num = Math.min(typing.length, 5);
+                    for (var i = 0; i < num; i++) {
+                        typers += typing[i] + (i < num - 1 ? ", " : "");
+                    }
+                    $(usersTypingID).text(typers + indicitive + "typing...");
                 }
             }
-            return false;
-        });
 
-        // NOTE: A user's message should be posted directly to their
-        // message list, rather than receiving it through the chat message event.
-        socket.on('chat message', function(user, msg) {
-            $(msgListID).append($("<li>").text(user.username + ": " + msg))
-            $(msgWindowID).animate({scrollTop: $(msgWindowID)[0].scrollHeight}, 'fast');
-        });
-        
-        socket.on('user typing', function(username) {
-            typing.push(username);
-            setUsersTyping();
-        });
-        
-        socket.on('done typing', function(username) {
-            var index = typing.indexOf(username);
-            if (index > -1) typing.splice(index, 1);
-            setUsersTyping();
-        });
+            // appends new message to the chat window and auto scrolls to fit
+            function appendMsg(msg) {
+                $(msgListID).append($("<li>").text(msg));
+                $(msgWindowID).animate({scrollTop: $(msgWindowID)[0].scrollHeight}, 'fast');
+            }
+
+            // emits new message over socket
+            $(formID).on('submit', function() {
+                // don't post empty
+                var message = $(inputID).val().trim();
+                if (message == '') return false;
+                socket.emit('chat message', user, message);
+                $(inputID).val('');
+                return false;
+            });
+
+            // notifies users when a specific user is typing a message
+            $(inputID).on('change paste keyup', function() {
+                // there are characters in the input field
+                if ($(this).val() != '') {
+                    // if I'm not already registered as typing
+                    if (typing.indexOf(user.username) == -1) {
+                        socket.emit('user typing', user.username);
+                    }
+                } else {
+                    // if I'm registered as typing
+                    if (typing.indexOf(user.username) > -1) {
+                        socket.emit('done typing', user.username);
+                    }
+                }
+                return false;
+            });
+
+            // NOTE: A user's message should be posted directly to their
+            // message list, rather than receiving it through the chat message event.
+            socket.on('chat message', function(user, msg) {
+                appendMsg(user.username + ": " + msg);
+            });
+
+            // appends a server message to the chat window
+            socket.on('server message', function(data) {
+                appendMsg('server: ' + data.message);
+            });
+
+            // notifies users when a specific user is typing a message
+            socket.on('user typing', function(username) {
+                typing.push(username);
+                setUsersTyping();
+            });
+
+            // notifies users when a specific user is no longer typing
+            socket.on('done typing', function(username) {
+                var index = typing.indexOf(username);
+                if (index > -1) typing.splice(index, 1);
+                setUsersTyping();
+            });
         

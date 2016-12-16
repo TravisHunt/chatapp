@@ -1,8 +1,12 @@
 module.exports = function(io) {
-    
+
     io.on('connection', function(socket) {
-        console.log('connection made');
-        
+
+        socket.on('join', function(data) {
+            socket.join(data.username);
+            io.in(data.username).emit('server message', {message: "Welcome to global chat!"});
+        });
+
         socket.on('chat message', function(user, msg) {
             io.emit('chat message', user, msg);
         });
@@ -14,6 +18,7 @@ module.exports = function(io) {
         socket.on('done typing', function(username) {
             io.emit('done typing', username);
         });
+
     });
     
 }

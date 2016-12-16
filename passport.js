@@ -2,9 +2,9 @@
 
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
-var TwitterStrategy = require('passport-twitter');
-var GoogleStrategy = require('passport-google');
-var FacebookStrategy = require('passport-facebook');
+//var TwitterStrategy = require('passport-twitter');
+//var GoogleStrategy = require('passport-google');
+//var FacebookStrategy = require('passport-facebook');
 var funct = require('./functions');
 
 // User serializer & deserializer
@@ -18,9 +18,9 @@ passport.deserializeUser(function(obj, done) {
 
 // local signin (existing users)
 passport.use('local-signin', new LocalStrategy(
-    {passReqToCallback: true},
-    function(req, username, password, done) {
-        funct.localAuth(username, password)
+    {usernameField: 'email', passReqToCallback: true},
+    function(req, email, password, done) {
+        funct.localAuth(email, password)
         .then(function(user) {
             if (user) {
                 req.session.success = "You are logged in as " + user.username;
@@ -39,7 +39,9 @@ passport.use('local-signin', new LocalStrategy(
 passport.use('local-signup', new LocalStrategy(
     {passReqToCallback: true},
     function(req, username, password, done) {
-        funct.localReg(username, password)
+        // get the email from the request, since passport is a jew
+        var email = req.body['email'];
+        funct.localReg(username, email, password)
         .then(function(user) {
             if (user) {
                 req.session.success = "Registration successful!";

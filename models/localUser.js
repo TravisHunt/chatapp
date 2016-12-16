@@ -3,12 +3,12 @@ var Schema = mongoose.Schema;
 
 var localUserSchema = new Schema({
     username: String,
+    email: String,
     password: String,
-    //email: String,
     avatar: String,
     friends: {type: Array, default: []},
     dateCreated: {type: Date, default: Date.now},
-    active: {type: Boolean, default: true},
+    active: {type: Boolean, default: true}
 }, {collection: 'localUsers'});
 
 localUserSchema.methods.getUsername = function(cb) {
