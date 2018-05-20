@@ -7,13 +7,14 @@ var localUser = require('./models/localUser');
 mongoose.Promise = Q.Promise;
 
 // MongoDB connection info
-var mongodbURL = "mongodb://" + config.mongodbHost + ':27017/users';
+var mongodbURL = "mongodb://" + config.mongodbHost + ':27017/chatapp';
+var mongodbOptions = config.mongodbOptions || {};
 
 // local-signup strategy
 exports.localReg = function(username, email, password) {
     var deferred = Q.defer();
-    mongoose.connect(mongodbURL);
-    localUser.findOne({"email": email}, function(err, user) {
+    mongoose.connect(mongodbURL, mongodbOptions);
+    localUser.findOne({"username": username}, function(err, user) {
         if (user) {
             deferred.resolve(false);
         } else {
@@ -40,10 +41,10 @@ exports.localReg = function(username, email, password) {
 };
 
 // local-signin strategy
-exports.localAuth = function(email, password) {
+exports.localAuth = function(username, password) {
     var deferred = Q.defer();
     mongoose.connect(mongodbURL);
-    localUser.findOne({"email": email}, function(err, user) {
+    localUser.findOne({"username": username}, function(err, user) {
         if (user) {
             if (bcrypt.compareSync(password, user.password)) {
                 deferred.resolve(user);

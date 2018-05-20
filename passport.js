@@ -18,9 +18,9 @@ passport.deserializeUser(function(obj, done) {
 
 // local signin (existing users)
 passport.use('local-signin', new LocalStrategy(
-    {usernameField: 'email', passReqToCallback: true},
-    function(req, email, password, done) {
-        funct.localAuth(email, password)
+    {passReqToCallback: true},
+    function(req, username, password, done) {
+        funct.localAuth(username, password)
         .then(function(user) {
             if (user) {
                 req.session.success = "You are logged in as " + user.username;
